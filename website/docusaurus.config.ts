@@ -93,8 +93,6 @@ const config: Config = {
 	],
 
 	themeConfig: {
-		// Replace with your project's social card
-		image: "img/stardew-access-social-card.jpg", // Replace with your own image if available
 		colorMode: {
 			respectPrefersColorScheme: true,
 		},
