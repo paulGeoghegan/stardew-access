@@ -1,0 +1,73 @@
+name: Docs
+
+# Builds the Docusaurus site in website/ and deploys it to GitHub Pages.
+# Pull requests only build the site (broken links fail the build); the
+# deploy job runs on pushes to development, manual runs and workflow calls.
+#
+# One-time setup: Settings -> Pages -> Source: "GitHub Actions".
+
+on:
+  pull_request:
+    paths:
+      - 'website/**'
+      - '.github/workflows/docs.yml'
+
+  push:
+    branches: [development]
+    paths:
+      - 'website/**'
+      - '.github/workflows/docs.yml'
+
+  workflow_dispatch:
+
+  # Commits pushed by other workflows (e.g. the generated changelogs) use
+  # GITHUB_TOKEN and don't trigger push events, so those workflows can call
+  # this one to redeploy the site.
+  workflow_call:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull source code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Build the site
+        working-directory: website
+        run: npm run build
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/build
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
