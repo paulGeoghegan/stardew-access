@@ -6,6 +6,7 @@ using stardew_access.Utils;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+
 // ReSharper disable UnusedMember.Global
 
 namespace stardew_access;
@@ -26,12 +27,11 @@ public class API : IStardewAccessApi
 
     // Note to future self, don't make these static, it won't give errors in sv access but it will in other mods if they try to use the stardew access api.
     //Setting Pragma to disable warning CA1822 prompting to make fields static.
-    public API()
-    {
-    }
+    public API() { }
 #pragma warning disable CA1822 // Mark members as static
 
     #region Keybinds
+
     public KeybindList LeftClickMainKey => MainClass.Config.LeftClickMainKey;
     public KeybindList RightClickMainKey => MainClass.Config.RightClickMainKey;
     public KeybindList LeftClickAlternateKey => MainClass.Config.LeftClickAlternateKey;
@@ -46,6 +46,7 @@ public class API : IStardewAccessApi
     public KeybindList TileCursorDownKey => MainClass.Config.TileCursorDownKey;
     public KeybindList TileCursorLeftKey => MainClass.Config.TileCursorLeftKey;
     public KeybindList PrimaryInfoKey => MainClass.Config.PrimaryInfoKey;
+
     #endregion
 
     #region Screen reader related
@@ -105,11 +106,11 @@ public class API : IStardewAccessApi
             ToTranslationCategory(translationCategory), customQuery, disableTranslationWarnings);
 
     public bool SayMenuElement(IScreenReadable element, bool interrupt = true)
-        => MainClass.ScreenReader.SayMenuElement(element.ScreenReaderText, element.ScreenReaderDescription, interrupt, excludeFromBuffer: false);
-    
-    public bool SayMenuElement(string text, string description = "", bool interrupt = true)
+        => MainClass.ScreenReader.SayMenuElement(element, interrupt, excludeFromBuffer: false);
+
+    public bool SayMenuElement(string text, string description = "", bool interrupt = true, string? customQuery = null)
         => MainClass.ScreenReader.SayMenuElement(text, description, interrupt, excludeFromBuffer: false);
-    
+
     public bool SayWithChatChecker(string text, bool interrupt)
         => MainClass.ScreenReader.SayWithChatChecker(text, interrupt);
 
@@ -119,7 +120,7 @@ public class API : IStardewAccessApi
     public string Translate(string translationKey, object? tokens = null,
         string translationCategory = "Default", bool disableWarning = false)
         => Translator.Instance.Translate(translationKey, tokens, ToTranslationCategory(translationCategory), disableWarning);
-    
+
     #endregion
 
     #region Commands
@@ -144,6 +145,57 @@ public class API : IStardewAccessApi
 
     #region Tiles related
 
+    public void AddTile(string category, string name, Vector2 tile, GameLocation location, string modId, bool addToObjectTracker = false)
+    {
+        MainClass.TileManager.AddModTile(category, name, tile, location, modId);
+        
+        if (!addToObjectTracker) return;
+        
+        if (Game1.currentLocation.Equals(location))
+        {
+            string resolvedCategoryName = CATEGORY.FromString(category).ToString();
+            ObjectTracker.Instance.trackedObjects?.AddObject(resolvedCategoryName, name, tile);
+        }
+    }
+
+    public void AddTile(string category, string name, Vector2 tile, string locationOrEventFestivalName, string modId, bool addToObjectTracker = false)
+    {
+        MainClass.TileManager.AddModTile(category, name, tile, locationOrEventFestivalName, modId);
+
+        if (!addToObjectTracker) return;
+        
+        string currentLocationName = Game1.currentLocation.currentEvent is not null ? Game1.currentLocation.currentEvent.FestivalName : Game1.currentLocation.NameOrUniqueName;
+        if (locationOrEventFestivalName.Equals(currentLocationName))
+        {
+            string resolvedCategoryName = CATEGORY.FromString(category).ToString();
+            ObjectTracker.Instance.trackedObjects?.AddObject(resolvedCategoryName, name, tile);
+        }
+    }
+
+    public void AddTileToObjectTracker(string category, string name, Vector2 tile, NPC? character = null)
+    {
+        string resolvedCategoryName = CATEGORY.FromString(category).ToString();
+        ObjectTracker.Instance.trackedObjects?.AddObject(resolvedCategoryName, name, tile, character);
+    }
+
+    public bool RemoveTileFromObjectTracker(string category, string name)
+    {
+        string resolvedCategoryName = CATEGORY.FromString(category).ToString();
+        return ObjectTracker.Instance.trackedObjects?.RemoveObject(resolvedCategoryName, name) ?? false;
+    }
+
+    public void AddTileLocationHandler(GameLocation? location, Func<int, int, (string name, string category)?> handler, string modId) 
+        => DynamicTiles.RegisterHandler(modId, handler, location: location);
+
+    public void AddTileLocationNameHandler(string? locationNameOrUniqueName, Func<int, int, (string name, string category)?> handler, string modId)
+        => DynamicTiles.RegisterHandler(modId, handler, locationNameOrUniqueName: locationNameOrUniqueName);
+
+    public void AddTileEventIdHandler(string? eventId, Func<int, int, (string name, string category)?> handler, string modId)
+        => DynamicTiles.RegisterHandler(modId, handler, eventId: eventId);
+
+    public void AddTileHandler(Func<int, int, (string name, string category)?> handler, string modId)
+        => DynamicTiles.RegisterHandler(modId, handler);
+
     public Dictionary<Vector2, (string name, string category)> SearchNearbyTiles(Vector2 center, int limit)
         => new Radar().SearchNearbyTiles(center, limit, false);
 
@@ -153,7 +205,7 @@ public class API : IStardewAccessApi
     public (string? name, string? category) GetNameWithCategoryNameAtTile(Vector2 tile)
         => TileInfo.GetNameWithCategoryNameAtTile(tile, null);
 
-    public string? GetNameAtTile(Vector2 tile) => TileInfo.GetNameAtTile(tile, null);
+    public string? GetNameAtTile(Vector2 tile) => TileInfo.GetNameAtTile(tile);
 
     #endregion
 
@@ -236,6 +288,17 @@ public class API : IStardewAccessApi
     public void SpeakOptionsElement(OptionsElement element)
         => OptionsElementUtils.NarrateElement(element);
 
+    public void AddIClickableMenuDrawHandler(Func<bool> handler, string modId)
+        => IClickableMenuPatch.RegisterDrawHandler(handler, modId);
+
+    public void AddIClickableMenuDrawHandler(Func<int, int, int, bool> handler, string modId)
+        => IClickableMenuPatch.RegisterDrawWithParamsHandler(handler, modId);
+
+    public void AddIClickableMenuDrawHoverTextHandler(
+        Func<IStardewAccessApi.IDrawHoverTextData, bool> handler,
+        string modId
+    ) => IClickableMenuPatch.RegisterDrawHoverTextHandler(handler, modId);
+
     public void RegisterCustomMenuAsAccessible(string? fullNameOfClass)
     {
         if (string.IsNullOrWhiteSpace(fullNameOfClass))
@@ -255,7 +318,7 @@ public class API : IStardewAccessApi
             Log.Error("fullNameOfClass cannot be null or empty!");
             return;
         }
-        
+
         Log.Debug($"Added `{fullNameOfClass}` to the list of menus that ignore speaking hover texts.");
         IClickableMenuPatch.IgnoreHoverTextInMenus.Add(fullNameOfClass);
     }
@@ -267,7 +330,7 @@ public class API : IStardewAccessApi
             Log.Error("fullNameOfClass cannot be null or empty!");
             return;
         }
-        
+
         Log.Debug($"Added `{fullNameOfClass}` to the list of menus that ignore speaking clickable components.");
         IClickableMenuPatch.IgnoreClickableComponentsInMenus.Add(fullNameOfClass);
     }

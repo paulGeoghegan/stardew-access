@@ -1,0 +1,18 @@
+{
+  "Format": "2.8.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "shoaib.stardewaccess/TrackedMachinesData",
+      "Entries": {
+        "shoaib.stardewaccess.cp": {
+          "QualifiedObjectIds": [
+            "(O)710",
+            "(BC)247",
+            "(BC)MiniForge"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,8 @@
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using stardew_access.Translation;
+using stardew_access.Framework;
 using stardew_access.Utils;
-using StardewModdingAPI;
 using StardewValley;
 
 namespace stardew_access.Tiles;
@@ -17,13 +16,12 @@ public class AccessibleTileManager
     private const string TileDataPath = "assets/TileData";
     private const string TileFileName = "tiles.json";
     private const string UserTileFileName = "tiles_user.json";
-    private const string TilePropertyName = "TileDesc";
 
     // Dictionary to map location names to Accessiblelocations
     private Dictionary<string, AccessibleLocation> Locations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     
-    // Dictionary to store third party mods' translations
-    private Dictionary<string, ITranslationHelper> ModTranslation { get; } = new();
+    // <mop_id, <mod_id, tile>>
+    private Dictionary<string, Dictionary<string, List<AccessibleTile>>> ModTiles { get; } = new();
 
     // Private instance variable
     private static AccessibleTileManager? _instance;
@@ -43,6 +41,11 @@ public class AccessibleTileManager
     {
         // Call the Initialize method to load data
         //Initialize();
+        AssetHandler.OnAccessibleTilesDataAssetInvalidated += (sender, args) =>
+        {
+            Log.Debug($"[AccessibleTileManager] OnAccessibleTilesDataAssetInvalidated triggered, clearing location data...");
+            Locations.Clear();
+        };
     }
 
     internal void Initialize()
@@ -175,8 +178,29 @@ public class AccessibleTileManager
             location = new AccessibleLocation(gameLocation); // Creating an AccessibleLocation with empty tile dictionary
         }
 
-        // Detect and add tiles having "TileDesc" tile property.
-        AddFromTileProperties(location, gameLocation);
+        if (AssetHandler.AccessibleTilesData.TryGetValue(locationName, out var modData))
+        {
+            foreach (var mapData in modData.Values)
+            {
+                foreach (var accessibleTileData in mapData.Tiles)
+                {
+                    // Using force so mods can override tiles without needing to use CP to modify it.
+                    location.AddTile(accessibleTileData.toAccessibleTile(), force: true);
+                }
+            }
+        }
+
+        if (ModTiles.TryGetValue(locationName, out var modData1))
+        {
+            foreach (var tiles in modData1.Values)
+            {
+                foreach (var accessibleTile in tiles)
+                {
+                    // Using force so mods can override tiles without needing to use CP to modify it.
+                    location.AddTile(accessibleTile, force: true);
+                }
+            }
+        }
 
         // Add the location to the Locations dictionary
         Locations.Add(isEvent ? eventName : locationName, location);
@@ -239,61 +263,25 @@ public class AccessibleTileManager
     public HashSet<AccessibleTile> GetTilesByCategory(CATEGORY category, string? layerName = null, string? locationName = null) => GetLocation(locationName)?.GetTilesByCategory(category, layerName) ?? [];
     public HashSet<AccessibleTile> GetTilesByCategory(CATEGORY category, string? layerName = null, GameLocation? location = null) => GetLocation(location)?.GetTilesByCategory(category, layerName) ?? [];
 
-    private void AddFromTileProperties(AccessibleLocation location, GameLocation gameLocation)
+    public void AddModTile(string category, string name, Vector2 tile, GameLocation location, string modId)
     {
-        foreach (var layer in gameLocation.Map.Layers)
-        {
-            var tileArray = layer.Tiles;
-            for (int x = 0; x <= (gameLocation.Map.DisplayWidth / Game1.tileSize); x++)
-            {
-                for (int y = 0; y <= (gameLocation.Map.DisplayHeight / Game1.tileSize); y++)
-                {
-                    if (tileArray[x, y] == null) continue;
-                    if (!tileArray[x, y].Properties.TryGetValue(TilePropertyName, out var val)) continue;
-
-                    // <category>,<name>,<optional:translation-key>,<optional:unique-id>
-                    var parts = ((string)val).Split(",");
-
-                    CATEGORY category = CATEGORY.FromString(parts[0]);
-                    if (parts.Count() == 4)
-                    {
-                        EnsureModTranslationAdded(parts[3]);
-                        if (ModTranslation.TryGetValue((parts[3]), out var translationHelper) && translationHelper.ContainsKey(parts[2]))
-                        {
-#if DEBUG
-                            Log.Debug($"[AccessibleTileManager::AddFromTileProperties {{{(Game1.currentLocation.currentEvent is not null ? Game1.currentLocation.currentEvent.FestivalName : Game1.currentLocation.NameOrUniqueName)}}}] Adding a tile: {translationHelper.Get(parts[2])}, {x}x {y}y, category={category.Value}, layer={layer.Id}, from mod={parts[3]}");
-#endif
-                            location.AddTile(new(staticNameOrTranslationKey: translationHelper.Get(parts[2]),
-                                staticCoordinates: [new(x, y)],
-                                category: category
-                            ));
-                            continue;
-                        }
-                    }
-
-                    string name = parts.Count() >= 3 && Translator.Instance.IsAvailable(parts[2],
-                        translationCategory: TranslationCategory.StaticTiles)
-                        ? Translator.Instance.Translate(parts[2], translationCategory: TranslationCategory.StaticTiles)
-                        : parts.Count() >= 3 && Translator.Instance.IsAvailable(parts[2])
-                            ? Translator.Instance.Translate(parts[2])
-                            : parts[1];
-#if DEBUG
-                    Log.Debug($"[AccessibleTileManager::AddFromTileProperties {{{(Game1.currentLocation.currentEvent is not null ? Game1.currentLocation.currentEvent.FestivalName : Game1.currentLocation.NameOrUniqueName)}}}] Adding a tile: {name}, {x}x {y}y, category={category.Value}, layer={layer.Id}");
-#endif
-                    location.AddTile(new(staticNameOrTranslationKey: name,
-                        staticCoordinates: [new(x, y)],
-                        category: category
-                    ));
-                }
-            }
-        }
+        // TODO Create a helper function to get the location name
+        string locationName = location.currentEvent is not null ? location.currentEvent.FestivalName : location.NameOrUniqueName;
+        AddModTile(category, name, tile, locationName, modId);
     }
 
-    private void EnsureModTranslationAdded(string uniqueId)
+    public void AddModTile(string category, string name, Vector2 tile, string locationName, string modId)
     {
-        if (ModTranslation.ContainsKey(uniqueId)) return;
-        IModInfo? modInfo = MainClass.ModHelper!.ModRegistry.Get(uniqueId);
-        var translationHelper = (ITranslationHelper?)modInfo?.GetType().GetProperty("Translations")?.GetValue(modInfo);
-        if (translationHelper is not null) ModTranslation.Add(uniqueId, translationHelper);
+        var accessibleTile = new AccessibleTile(
+            staticNameOrTranslationKey: name,
+            category: CATEGORY.FromString(category),
+            staticCoordinates: [tile]
+        );
+        
+        if (ModTiles[locationName].ContainsKey(modId)) ModTiles[locationName][modId].Add(accessibleTile);
+        else ModTiles[locationName][modId] = [accessibleTile];
+
+        // Refresh the location
+        Locations.Remove(locationName);
     }
 }

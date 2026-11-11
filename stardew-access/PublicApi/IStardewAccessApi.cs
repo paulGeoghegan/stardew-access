@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using stardew_access.Translation;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -8,9 +10,64 @@ using StardewValley.Menus;
 
 namespace stardew_access;
 
+public record DrawHoverTextData(
+    StringBuilder Text,
+    SpriteFont Font,
+    int XOffset = 0,
+    int YOffset = 0,
+    int MoneyAmountToDisplayAtBottom = -1,
+    string? BoldTitleText = null,
+    int HealAmountToDisplay = -1,
+    string[]? BuffIconsToDisplay = null,
+    Item? HoveredItem = null,
+    int CurrencySymbol = 0,
+    string? ExtraItemToShowIndex = null,
+    int ExtraItemToShowAmount = -1,
+    int OverrideX = -1,
+    int OverrideY = -1,
+    float Alpha = 1f,
+    CraftingRecipe? CraftingIngredients = null,
+    IList<Item>? AdditionalCraftMaterials = null,
+    Texture2D? BoxTexture = null,
+    Rectangle? BoxSourceRect = null,
+    Color? TextColor = null,
+    Color? TextShadowColor = null,
+    float BoxScale = 1f,
+    int BoxWidthOverride = -1,
+    int BoxHeightOverride = -1
+) : IStardewAccessApi.IDrawHoverTextData;
+
 // TODO: Update doc comments
 public interface IStardewAccessApi
 {
+    public interface IDrawHoverTextData
+    {
+        StringBuilder Text { get; }
+        SpriteFont Font { get; }
+        int XOffset { get; }
+        int YOffset { get; }
+        int MoneyAmountToDisplayAtBottom { get; }
+        string? BoldTitleText { get; }
+        int HealAmountToDisplay { get; }
+        string[]? BuffIconsToDisplay { get; }
+        Item? HoveredItem { get; }
+        int CurrencySymbol { get; }
+        string? ExtraItemToShowIndex { get; }
+        int ExtraItemToShowAmount { get; }
+        int OverrideX { get; }
+        int OverrideY { get; }
+        float Alpha { get; }
+        CraftingRecipe? CraftingIngredients { get; }
+        IList<Item>? AdditionalCraftMaterials { get; }
+        Texture2D? BoxTexture { get; }
+        Rectangle? BoxSourceRect { get; }
+        Color? TextColor { get; }
+        Color? TextShadowColor { get; }
+        float BoxScale { get; }
+        int BoxWidthOverride { get; }
+        int BoxHeightOverride { get; }
+    }
+
     #region Keybinds
     /// <summary>Primary key to simulate mouse left click.</summary>
     KeybindList LeftClickMainKey { get; }
@@ -118,7 +175,7 @@ public interface IStardewAccessApi
     /// <summary>
     /// Speaks the content of the given element while using the menu query to prevent speaking multiple times in the menu.
     /// </summary>
-    /// <param name="element">The element to be spoken.</param>
+    /// <param name="element">The element to be spoken. The elements are compared by reference in addition to their ScreenReaderText value. The element's ScreenReaderDescription is only spoken once (unless changed).</param>
     /// <param name="interrupt">Whether to skip the currently speaking text or not.</param>
     /// <returns>true if the element was spoken otherwise false.</returns>
     public bool SayMenuElement(IScreenReadable element, bool interrupt = true);
@@ -127,10 +184,11 @@ public interface IStardewAccessApi
     /// Speaks the given element's contents while using the menu query to prevent speaking multiple times in the menu.
     /// </summary>
     /// <param name="text">The element's text (can be its name) to be spoken.</param>
-    /// <param name="description">The element's description to be spoken.</param>
+    /// <param name="description">The element's description to be spoken. The description is spoken only once (unless changed).</param>
     /// <param name="interrupt">Whether to skip the currently speaking text or not.</param>
+    /// <param name="customQuery">If set, uses this instead of <paramref name="text"/> as query to check whether to speak the text or not.</param>
     /// <returns>true if the element was spoken otherwise false.</returns>
-    public bool SayMenuElement(string text, string description = "", bool interrupt = true);
+    public bool SayMenuElement(string text, string description = "", bool interrupt = true, string? customQuery = null);
 
     /// <summary>Speaks the text via the loaded screen reader (if any).
     /// <br/>Skips the text narration if the previously narrated text was the same as the one provided.
@@ -184,6 +242,156 @@ public interface IStardewAccessApi
     #endregion
 
     #region Tiles related
+    
+    /// <summary>
+    /// Adds a tile to the given location that will be detected by ReadTile and all other features.
+    /// </summary>
+    /// <param name="category">The category name of the tile. Find category names here: <see cref="Utils.CATEGORY"/></param>
+    /// <param name="name">Translated name of the tile</param>
+    /// <param name="tile">The tile's position</param>
+    /// <param name="location">The location of the tile</param>
+    /// <param name="modId">Your mod's modid</param>
+    /// <param name="addToObjectTracker">If true, will add the tile to the object tracker but only if the given location is the current location.</param>
+    public void AddTile(string category, string name, Vector2 tile, GameLocation location, string modId, bool addToObjectTracker = false);
+    // public void RemoveTile(string category, string name, Vector2 tile, GameLocation location);
+    
+    /// <summary>
+    /// Adds a tile to the given location that will be detected by ReadTile and all other features.
+    /// </summary>
+    /// <param name="category">The category name of the tile. Find category names here: <see cref="Utils.CATEGORY"/></param>
+    /// <param name="name">Translated name of the tile</param>
+    /// <param name="tile">The tile's position</param>
+    /// <param name="locationOrEventFestivalName">The location's name or the event's festival name (<see cref="Event.FestivalName"/>) of the tile. The event's festival name is matched first.</param>
+    /// <param name="modId">Your mod's modid</param>
+    /// <param name="addToObjectTracker">If true, will add the tile to the object tracker but only if the given location or event's festival name matches with the current location's.</param>
+    public void AddTile(string category, string name, Vector2 tile, string locationOrEventFestivalName, string modId, bool addToObjectTracker = false);
+    // public void RemoveTile(string category, string name, Vector2 tile, string locationOrEventFestivalName);
+    
+    /// <summary>
+    /// Adds a tile to the object tracker.
+    /// Note that this does not persist, so the tile will be removed from the tracker after object tracker refreshes.
+    /// </summary>
+    /// <param name="category">The category of the tile. <see cref="Utils.CATEGORY"/></param>
+    /// <param name="name">Translated name of the tile.</param>
+    /// <param name="tile">Tile's position.</param>
+    /// <param name="character">(Optional) The NPC at the tile.</param>
+    public void AddTileToObjectTracker(string category, string name, Vector2 tile, NPC? character = null);
+    
+    /// <summary>
+    /// Attempts to remove a tile with the given name and in the given category.
+    /// </summary>
+    /// <param name="category">The category of the tile. <see cref="Utils.CATEGORY"/></param>
+    /// <param name="name">Translated name of the tile.</param>
+    /// <returns>true if the tile was found and removed, else false.</returns>
+    public bool RemoveTileFromObjectTracker(string category, string name);
+
+    /// <summary>
+    /// Registers a dynamic tile handler that allows your mod to announce custom tiles
+    /// within a specific <see cref="GameLocation"/> instance to Stardew Access.
+    /// When a tile lookup occurs in the given location, your handler will be called with
+    /// the tile's coordinates. Return the tile's name and category if your mod has something
+    /// to announce at those coordinates, or <c>null</c> if not.
+    /// </summary>
+    /// <remarks>
+    /// Handlers are invoked in registration order (FIFO). The first handler to return a non-null
+    /// result wins; remaining handlers for this location are skipped.
+    /// This handler is checked first (priority 0), before location name, event, and unconstrained handlers.
+    /// </remarks>
+    /// <param name="location">The <see cref="GameLocation"/> instance to constrain this handler to.</param>
+    /// <param name="handler">
+    /// A function that receives the tile's X and Y coordinates and returns a tuple of
+    /// (<c>name</c>, <c>category</c>) if your mod has something to announce at those coordinates, or <c>null</c> if not.
+    /// See <see cref="Utils.CATEGORY"/> for valid category values.
+    /// </param>
+    /// <param name="modId">Your mod's unique ID, used for tracing.</param>
+    public void AddTileLocationHandler(
+        GameLocation location,
+        Func<int, int, (string name, string category)?> handler,
+        string modId
+    );
+
+    /// <summary>
+    /// Registers a dynamic tile handler that allows your mod to announce custom tiles
+    /// within a location matched by its name or unique name to Stardew Access.
+    /// When a tile lookup occurs in the matching location, your handler will be called with
+    /// the tile's coordinates. Return the tile's name and category if your mod has something
+    /// to announce at those coordinates, or <c>null</c> if not.
+    /// Prefer this over <see cref="AddTileLocationHandler"/> when you don't have a direct
+    /// <see cref="GameLocation"/> reference, such as when the location may not be loaded yet.
+    /// </summary>
+    /// <remarks>
+    /// Handlers are invoked in registration order (FIFO). The first handler to return a non-null
+    /// result wins; remaining handlers for this location name are skipped.
+    /// This handler is checked second (priority 1), after location handlers but before event and unconstrained handlers.
+    /// </remarks>
+    /// <param name="locationNameOrUniqueName">
+    /// The name or unique name of the location to constrain this handler to. Use <see cref="GameLocation.NameOrUniqueName"/> to retrieve this value.
+    /// </param>
+    /// <param name="handler">
+    /// A function that receives the tile's X and Y coordinates and returns a tuple of
+    /// (<c>name</c>, <c>category</c>) if your mod has something to announce at those coordinates, or <c>null</c> if not.
+    /// See <see cref="Utils.CATEGORY"/> for valid category values.
+    /// </param>
+    /// <param name="modId">Your mod's unique ID, used for tracing.</param>
+    public void AddTileLocationNameHandler(
+        string locationNameOrUniqueName,
+        Func<int, int, (string name, string category)?> handler,
+        string modId
+    );
+
+    /// <summary>
+    /// Registers a dynamic tile handler that allows your mod to announce custom tiles
+    /// during a specific event to Stardew Access.
+    /// When a tile lookup occurs while the given event is active, your handler will be called with
+    /// the tile's coordinates. Return the tile's name and category if your mod has something
+    /// to announce at those coordinates, or <c>null</c> if not.
+    /// </summary>
+    /// <remarks>
+    /// Handlers are invoked in registration order (FIFO). The first handler to return a non-null
+    /// result wins; remaining handlers for this event are skipped.
+    /// This handler is checked third (priority 2), after location and location name handlers but before unconstrained handlers.
+    /// </remarks>
+    /// <param name="eventId">
+    /// The ID of the event to constrain this handler to. Use <see cref="Event.id"/> to retrieve this value.
+    /// </param>
+    /// <param name="handler">
+    /// A function that receives the tile's X and Y coordinates and returns a tuple of
+    /// (<c>name</c>, <c>category</c>) if your mod has something to announce at those coordinates, or <c>null</c> if not.
+    /// See <see cref="Utils.CATEGORY"/> for valid category values.
+    /// </param>
+    /// <param name="modId">Your mod's unique ID, used for tracing.</param>
+    public void AddTileEventIdHandler(
+        string eventId,
+        Func<int, int, (string name, string category)?> handler,
+        string modId
+    );
+
+    /// <summary>
+    /// Registers an unconstrained dynamic tile handler that allows your mod to announce custom tiles
+    /// anywhere in the game to Stardew Access, regardless of location or active event.
+    /// On every tile lookup, your handler will be called with the tile's coordinates.
+    /// Return the tile's name and category if your mod has something to announce at those coordinates,
+    /// or <c>null</c> if not. Only one handler per mod is allowed.
+    /// </summary>
+    /// <remarks>
+    /// Handlers are invoked in registration order (FIFO). The first handler to return a non-null
+    /// result wins; remaining unconstrained handlers are skipped.
+    /// This handler is checked last (priority 3), after all constrained handlers.
+    /// Use constrained handlers (<see cref="AddTileLocationHandler"/>, <see cref="AddTileLocationNameHandler"/>,
+    /// <see cref="AddTileEventIdHandler"/>) where possible, as this handler only runs when no constrained
+    /// handler has already returned a result.
+    /// </remarks>
+    /// <param name="handler">
+    /// A function that receives the tile's X and Y coordinates and returns a tuple of
+    /// (<c>name</c>, <c>category</c>) if your mod has something to announce at those coordinates, or <c>null</c> if not.
+    /// See <see cref="Utils.CATEGORY"/> for valid category values.
+    /// </param>
+    /// <param name="modId">Your mod's unique ID, used for tracing. Only one handler per mod is permitted.</param>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="modId"/> has already registered an unconstrained handler.</exception>
+    public void AddTileHandler(
+        Func<int, int, (string name, string category)?> handler,
+        string modId
+    );
 
     /// <summary>
     /// Search the area using Breadth First Search algorithm(BFS).
@@ -354,6 +562,32 @@ public interface IStardewAccessApi
     public void SpeakOptionsElement(OptionsElement element);
 
     /// <summary>
+    /// Register a lambda function or handler that will be executed before the default handler on <see cref="IClickableMenu.draw(SpriteBatch)"/> is executed.
+    /// </summary>
+    /// <param name="handler">The handler, return false to skip further handlers (including the default one)</param>
+    /// <param name="modId">ModId of the registerer, one handler per modId</param>
+    public void AddIClickableMenuDrawHandler(Func<bool> handler, string modId);
+
+    /// <summary>
+    /// Register a lambda function or handler that will be executed before the default handler on <see cref="IClickableMenu.draw(SpriteBatch, int, int, int)"/> is executed.
+    /// </summary>
+    /// <param name="handler">The handler, return false to skip further handlers (including the default one)</param>
+    /// <param name="modId">ModId of the registerer, one handler per modId</param>
+    public void AddIClickableMenuDrawHandler(Func<int, int, int, bool> handler, string modId);
+
+    /// <summary>
+    /// Register a lambda function or handler that will be executed before the default handler on
+    /// <see cref="IClickableMenu.drawHoverText(SpriteBatch, StringBuilder, SpriteFont, int, int, int, string, int, string[], Item, int, string, int, int, int, float, CraftingRecipe, IList{Item}, Texture2D, Rectangle?, Color?, Color?, float, int, int)"/>
+    /// is executed.
+    /// </summary>
+    /// <param name="handler">The handler, return false to skip further handlers (including the default one)</param>
+    /// <param name="modId">ModId of the registerer, one handler per modId</param>
+    public void AddIClickableMenuDrawHoverTextHandler(
+        Func<IDrawHoverTextData, bool> handler,
+        string modId
+    );
+
+    /// <summary>
     /// A combination of <see cref="IgnoreHoverTextInMenu"/> and <see cref="IgnoreClickableComponentsInMenu"/>.
     /// <br/>Ignores both the hover texts and the clickable components.
     /// </summary>
@@ -375,7 +609,7 @@ public interface IStardewAccessApi
 
     /// <summary>
     /// Ignores speaking clickable components of the menu.
-    /// <br/>The clickable components are found with <see cref="IClickableMenu.allClickableCompnents"/>
+    /// <br/>The clickable components are found with <see cref="IClickableMenu.allClickableComponents"/>
     /// as well as by using reflection to get the fields of type <see cref="ClickableComponent"/> 
     /// </summary>
     /// <param name="fullNameOfClass">

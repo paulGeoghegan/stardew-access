@@ -20,7 +20,8 @@ internal static class InventoryUtils
     private static string prev_stamina_and_health_recovery_on_consumption = "";
     private static string prev_qualified_item_id = "";
 
-    internal static bool NarrateHoveredSlot(InventoryMenu? inventoryMenu,
+    internal static bool NarrateHoveredSlot(
+        InventoryMenu? inventoryMenu,
         bool? giveExtraDetails = null,
         int hoverPrice = -1,
         string? extraItemToShowIndex = null,
@@ -28,9 +29,12 @@ internal static class InventoryUtils
         string highlightedItemPrefix = "",
         string highlightedItemSuffix = "",
         int? hoverX = null,
-        int? hoverY = null)
+        int? hoverY = null,
+        bool isHoveredItemBundleItem = false
+    )
     {
-        if (NarrateHoveredSlotAndReturnIndex(inventoryMenu,
+        if (NarrateHoveredSlotAndReturnIndex(
+                inventoryMenu,
                 giveExtraDetails,
                 hoverPrice,
                 extraItemToShowIndex,
@@ -38,7 +42,9 @@ internal static class InventoryUtils
                 highlightedItemPrefix,
                 highlightedItemSuffix,
                 hoverX,
-                hoverY) == -999)
+                hoverY,
+                isHoveredItemBundleItem: isHoveredItemBundleItem
+            ) == -999)
         {
             return false;
         }
@@ -46,7 +52,8 @@ internal static class InventoryUtils
         return true;
     }
 
-    internal static int NarrateHoveredSlotAndReturnIndex(InventoryMenu? inventoryMenu,
+    internal static int NarrateHoveredSlotAndReturnIndex(
+        InventoryMenu? inventoryMenu,
         bool? giveExtraDetails = null,
         int hoverPrice = -1,
         string? extraItemToShowIndex = null,
@@ -54,7 +61,9 @@ internal static class InventoryUtils
         string highlightedItemPrefix = "",
         string highlightedItemSuffix = "",
         int? hoverX = null,
-        int? hoverY = null)
+        int? hoverY = null,
+        bool isHoveredItemBundleItem = false
+    )
     {
         giveExtraDetails ??= !MainClass.Config.DisableInventoryVerbosity;
         int mouseX = hoverX ?? Game1.getMouseX(true);
@@ -84,7 +93,8 @@ internal static class InventoryUtils
 
             bool? isHighlighted = inventoryMenu.highlightMethod(actualInventory[i]);
 
-            string itemDetails = GetItemDetails(actualInventory[i],
+            string itemDetails = GetItemDetails(
+                actualInventory[i],
                 i,
                 isHighlighted,
                 (bool)giveExtraDetails, // giveExtraDetails is already converted to bool because of first statement in this method.
@@ -92,7 +102,9 @@ internal static class InventoryUtils
                 extraItemToShowIndex,
                 extraItemToShowAmount,
                 highlightedItemPrefix,
-                highlightedItemSuffix);
+                highlightedItemSuffix,
+                isHoveredItemBundleItem: isHoveredItemBundleItem
+            );
 
             CheckAndSpeak(itemDetails, i);
             prevSlotIndex = i;
@@ -103,7 +115,8 @@ internal static class InventoryUtils
         return -999;
     }
 
-    internal static string GetItemDetails(Item item,
+    internal static string GetItemDetails(
+        Item item,
         int indexInInventory = -999,
         bool? isHighlighted = null,
         bool giveExtraDetails = false,
@@ -112,23 +125,39 @@ internal static class InventoryUtils
         int extraItemToShowAmount = -1,
         string highlightedItemPrefix = "",
         string highlightedItemSuffix = "",
-        string[]? customBuffs = null)
+        string[]? customBuffs = null,
+        bool isHoveredItemBundleItem = false,
+        bool ignoreCountIfNotStackable = true,
+        string? alternativeDisplayName = null,
+        string? alternativeDescription = null
+    )
     {
         string namePrefix = HandleHighlightedItemPrefix(isHighlighted, highlightedItemPrefix);
         string nameSuffix =
             $"{HandleHighlightedItemSuffix(isHighlighted, highlightedItemSuffix)}{HandleUnHighlightedItem(isHighlighted, indexInInventory)}";
-        string name = GetPluralNameOfItem(item);
-        name = $"{namePrefix}{name}{nameSuffix}";
+        string name = string.IsNullOrWhiteSpace(alternativeDisplayName)
+            ? ignoreCountIfNotStackable && item.maximumStackSize() == 1
+                ? GetNameOfItem(item)
+                : GetPluralNameOfItem(item)
+            : ignoreCountIfNotStackable && item.maximumStackSize() == 1
+                ? alternativeDisplayName
+                : GetPluralNameOfItem(alternativeDisplayName, item.Stack);
+        string donatableSuffix = isHoveredItemBundleItem
+            ? Translator.Instance.Translate("inventory_util-donatable-suffix")
+            : "";
+        name = $"{namePrefix}{name}{nameSuffix}{donatableSuffix}";
         string quality = GetQualityFromItem(item);
         string healthNStamina = GetHealthNStaminaFromItem(item);
         string buffs = (customBuffs is not null)
             ? string.Join(", ", customBuffs)
             : GetBuffsFromItem(item);
-        string description = item is Boots boots
-            ? boots.description +
-              (boots.defenseBonus.Value > 0 ? "\n" + Game1.content.LoadString("Strings\\UI:ItemHover_DefenseBonus", boots.defenseBonus.Value) : "") +
-              (boots.immunityBonus.Value > 0 ? "\n" + Game1.content.LoadString("Strings\\UI:ItemHover_ImmunityBonus", boots.immunityBonus.Value) : "")
-            : item.getDescription();
+        string description = !string.IsNullOrWhiteSpace(alternativeDescription)
+            ? alternativeDescription
+            : item is Boots boots 
+                ? boots.description
+                  + (boots.defenseBonus.Value > 0 ? "\n" + Game1.content.LoadString("Strings\\UI:ItemHover_DefenseBonus", boots.defenseBonus.Value) : "")
+                  + (boots.immunityBonus.Value > 0 ? "\n" + Game1.content.LoadString("Strings\\UI:ItemHover_ImmunityBonus", boots.immunityBonus.Value) : "") 
+                : item.getDescription();
         bool isShowingSellPrice = (Game1.player.stats.Get("Book_PriceCatalogue") != 0 && item is not Furniture && item.CanBeLostOnDeath() && item is not Clothing && item is not Wallpaper && (item is not StardewValley.Object || !(item as StardewValley.Object)!.bigCraftable.Value) && item.sellToStorePrice(-1L) > 0);
         string price = isShowingSellPrice ? GetPrice(item.sellToStorePrice() * item.Stack) : GetPrice(hoverPrice);
         string requirements = GetExtraItemInfo(extraItemToShowIndex, extraItemToShowAmount);
@@ -188,7 +217,8 @@ internal static class InventoryUtils
     /// Returns the in-game name of the item or the custom name if defined.
     /// </summary>
     /// <param name="qualifiedItemId">The QualifiedItemId of the item to get the name of.</param>
-    internal static string GetNameOfItem(string qualifiedItemId) => GetNameOfItem(ItemRegistry.GetData(qualifiedItemId).DisplayName, qualifiedItemId);
+    internal static string GetNameOfItem(string qualifiedItemId) =>
+        GetNameOfItem(ItemRegistry.GetData(qualifiedItemId).DisplayName, qualifiedItemId);
 
     /// <summary>
     /// Returns the in-game name of the item or the custom name if defined.
@@ -201,12 +231,13 @@ internal static class InventoryUtils
         // Ref: https://regex101.com/r/pppCfU/1
         string strippedQualifiedItemId = Regex.Replace(qualifiedItemId, @"\(([A-Za-z0-9]+)\)([A-Za-z0-9]+)", @"$1_$2");
         string specialName = Translator.Instance.Translate("inventory_util-special_items-name",
-                tokens: new { item_id = strippedQualifiedItemId });
+            tokens: new { item_id = strippedQualifiedItemId });
 #if DEBUG
         if (prev_qualified_item_id != qualifiedItemId)
         {
             prev_qualified_item_id = qualifiedItemId;
-            Log.Verbose($"Item: {displayName} [id={qualifiedItemId}] [stripped_id={strippedQualifiedItemId}] [special_name={specialName}]");
+            Log.Verbose(
+                $"Item: {displayName} [id={qualifiedItemId}] [stripped_id={strippedQualifiedItemId}] [special_name={specialName}]");
         }
 #endif
         if (specialName != "-9999")
@@ -224,7 +255,8 @@ internal static class InventoryUtils
         if (itemCount == prevStack && itemName == prevName)
         {
 #if DEBUG
-            Log.Trace($"Returning cached translation \"{prevTranslatedName}\" for stack \"{itemCount}\" and name \"{itemName}\"",
+            Log.Trace(
+                $"Returning cached translation \"{prevTranslatedName}\" for stack \"{itemCount}\" and name \"{itemName}\"",
                 true);
 #endif
             itemName = prevTranslatedName;
@@ -323,6 +355,7 @@ internal static class InventoryUtils
             {
                 buffValue = 0;
             }
+
             string buffName = ((buffValue > 0) ? "+" : "") + buffIconsToDisplay[j] + " ";
 
             if (j <= 11)
@@ -364,13 +397,15 @@ internal static class InventoryUtils
             });
     }
 
-    internal static string GetCraftingRecipeInfo(CraftingRecipe? recipe) => recipe is null ? ""
-        : Translator.Instance.Translate("item-crafting_recipe_info", new
-        {
-            name = recipe.DisplayName,
-            is_cooking_recipe = recipe.isCookingRecipe ? 1 : 0,
-            recipe.description,
-        });
+    internal static string GetCraftingRecipeInfo(CraftingRecipe? recipe) =>
+        recipe is null
+            ? ""
+            : Translator.Instance.Translate("item-crafting_recipe_info", new
+            {
+                name = recipe.DisplayName,
+                is_cooking_recipe = recipe.isCookingRecipe ? 1 : 0,
+                recipe.description,
+            });
 
     internal static string GetIngredientsFromRecipe(CraftingRecipe? recipe)
     {
@@ -389,8 +424,10 @@ internal static class InventoryUtils
         return string.Join(", ", ingredientList);
     }
 
-    internal static string GetPrice(int price) => price is -1 ? ""
-        : Translator.Instance.Translate("item-sell_price_info", new { price });
+    internal static string GetPrice(int price) =>
+        price is -1
+            ? ""
+            : Translator.Instance.Translate("item-sell_price_info", new { price });
 
     internal static string HandleHighlightedItemPrefix(bool? isHighlighted, string prefix)
     {

@@ -227,10 +227,22 @@ menu-collections_page-unshipped = Unshipped
 
 ### Crafting Page
 
-menu-crafting_page-recipe_info = {$produce_count} {$name}, {$is_craftable ->
-    [0] not craftable
-    *[1] craftable
-  }, Ingredients: {$ingredients}, Description: {$description}, {$buffs}
+menu-crafting_page-recipe_info = {$produce_count} {$name}, {$craftable_count ->
+    [0] {$is_craftable ->
+        [0] not craftable
+        *[1] craftable
+      }
+    [1] {$is_craftable ->
+        [0] not craftable
+        *[1] craftable
+      }
+    *[other] craftable {$craftable_count} times
+  }, Ingredients: {$ingredients}{$craft_count ->
+    [0] {EMPTYSTRING()}
+    [1] , Never crafted
+    [2] , Never cooked
+    *[3] , {$craft_count_text}
+  }, Description: {$description}, {$buffs}
 menu-crafting_page-unknown_recipe = Unknown recipe
 menu-crafting_page-previous_recipe_list_button = Previous recipe list button
 menu-crafting_page-next_recipe_list_button = Next recipe list button
@@ -614,6 +626,14 @@ menu-purchase_animal-animal_name_text_box = Name text box{$value ->
     [null] {EMPTYSTRING()}
     *[other] , Value: {$value}
   }
+
+### Text Entry Menu (OSK)
+
+menu-text_entry-backspace = Backspace
+menu-text_entry-space = Space
+menu-text_entry-upper_case_toggle = Upper case toggle button
+menu-text_entry-symbols_toggle = Symbols toggle button
+menu-text_entry-submit = Submit button
 
 ### Title Text Input Menu
 

@@ -41,10 +41,10 @@ jobs:
       - name: Install kramdown
         run: gem install kramdown
 
-      # Converts the .md files in docs/ to .html
+      # Converts the .md files in website/docs and website/guides to .html
       - name: Compile local docs
         run: |
-          cd ./docs/
+          cd ./website/
           ruby ./compiler_script.rb
           cd ../
 
