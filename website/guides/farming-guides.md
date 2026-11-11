@@ -25,7 +25,7 @@ The following guides all cover planting and growing crops.
 - [Planting Crops](#planting-crops)
 - [Growing Crops](#growing-crops)
 - [Harvesting Crops](#harvesting-crops)
-- [back to top]( #farming)
+- [back to top](#table-of-contents)
 
 ### Planting Crops
 
@@ -57,11 +57,11 @@ The following guides are all related to constructing and managing buildings on y
 - [Upgrading Farm Buildings](#upgrading-farm-buildings)
 - [Moving Farm Buildings](#moving-farm-buildings)
 - [Demolishing Farm Buildings](#demolishing-farm-buildings)
-- [back to top](#farming)
+- [back to top](#table-of-contents)
 
 ### Constructing Farm Buildings
 
-To construct a building on your farm, first decide where you want to build it and ensure that there is no debris in the area. The [tile cursor](#using-the-tile-viewer) is very helpful for accomplishing this. Different buildings will occupy different amounts of space on your farm. Check Robin's shop for more info.
+To construct a building on your farm, first decide where you want to build it and ensure that there is no debris in the area. The [tile cursor](stardew-access-guides.md#using-the-tile-viewer) is very helpful for accomplishing this. Different buildings will occupy different amounts of space on your farm. Check Robin's shop for more info.
 Once you have decided where you want your building to be and cleared debris from the area, collect the necessary materials for construction and ensure you have enough money. Go to Robin's shop, select "construct farm buildings" from the shop counter dialogue, and use the controls in the new menu to select the desired farm building to construct. To repeat information about the currently-selected building in this menu, press `C`.
 Once you have selected the building you want to construct, click "construct". A map of your farm will appear on screen.
 Use the arrow keys to focus on the coordinate where you want to place the building. As you move the tile cursor around, the map will scroll when the cursor reaches the edge of the portion of the map that is visible on screen. This will result in the tile cursor appearing to move too far as the map scrolls beneath it.
@@ -107,7 +107,7 @@ The following guides provide instructions on how to purchase and move farm anima
 
 - [Purchasing Farm Animals](#purchasing-farm-animals)
 - [Moving Farm Animals](#moving-farm-animals)
-- [back to top](#farming)
+- [back to top](#table-of-contents)
 
 ### Purchasing Farm Animals
 
@@ -143,6 +143,6 @@ If you cannot move an animal to a new building, ensure that the following are tr
 - [General Guides](general-guides.md)
 - [Mining Guides](mining-guides.md)
 
-**[Back to guides home](index.md)**
+**[Back to guides home](index.md)
 
-**[Back to setup](/docs/setup)**
+**[Back to readme...](/docs/)**

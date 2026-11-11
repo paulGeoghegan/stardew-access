@@ -58,3 +58,21 @@ For a list of SMAPI commands, visit the [Console commands](https://stardewvalley
 | rfadd    | Add an object key to the focus list of radar feature.          |
 | rfremove | Remove an object key from the focus list of radar feature      |
 | rflist   | List all the focus in the radar feature                        |
+| rfclear  | Remove all keys from the focus list in the radar feature       |
+| rfcount  | Number of focus in the radar feature                           |
+
+## Miscellaneous Commands
+
+| Command    | Description                                                      |
+|------------|------------------------------------------------------------------|
+| refst      | (Temporarily disabled) Refreshes static tiles json file          |
+| refmc      | Refreshes mod config json file                                   |
+
+## Other Pages
+
+- [Readme](index.md)
+- [Setup](setup.md)
+- [Features](features.md)
+- [Keybindings](keybindings.md)
+- [Configs](config.md)
+- [Guides](/guides/)

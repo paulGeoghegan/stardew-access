@@ -25,8 +25,8 @@ Warnings are also included for full inventory, low health, low energy, and being
 
 For more information, see the following pages:
 
-- [Keys](/docs/keybindings#global-keys)
-- [Narration & Verbosity Configs](/docs/config#narration--verbosity-configs)
+- [Keys](keybindings.md#global-keys)
+- [Narration & Verbosity Configs](config.md#narration--verbosity-configs)
 
 ## Tile Reader
 
@@ -58,3 +58,58 @@ This menu is opened with `left ctrl + enter` and allows you to mark the tile's c
 4. Festivals are not properly detected.
 
 For more information about all tile reader features, including the tile info menu, see the following pages:
+
+- [Tile Viewer Keys](keybindings.md#tile-viewer-keys)
+- [Tile Viewer Configs](config.md#tile-viewer-configs)
+- [Global & Tile Reader Keybindings](keybindings.md#global-keys)
+- [Tile Reader Commands](commands.md#tile-reader-commands)
+
+## Object Tracker
+
+This feature set allows you to track individual objects on the map. from doorways to forageables to animals and slimes, the object tracker sorts everything into categories and provides a list of everything on the map, sorted by proximity.
+You can get coordinates, distance, and auto-travel to the nearest instance of the selected object.
+
+### Object Tracker Favorites
+
+Set frequently-traveled spots as a favorite. With 10 favorites per stack and an effectively-limitless set of stacks of favorites per map, you can efficiently get anywhere you need to.
+
+For more information about the object tracker feature set, including object tracker favorites, see the following pages:
+
+- [Object Tracker Keys](keybindings.md#object-tracker-keys)
+- [Object Tracker configs](config.md#object-tracker-configs)
+
+## Grid Movement
+
+When enabled, the player moves 1 tile at a time and makes a footstep sound on every movement. This feature is very handy when precise movement is required, such as when planting or harvesting crops.
+
+**Important notes:**
+
+1. In case you encounter the player moving more than one step or the speed being faster than usual,
+try reducing the speed of grid movement from the config.
+
+For more information, see the following pages:
+
+- [Grid Movement Keys](keybindings.md#grid-movement-keys)
+- [Grid Movement Configs](config.md#grid-movement-configs)
+
+## Radar
+
+This feature will play auditory beacons at the location of the nearest selected object.
+
+**Important Notes:**
+
+1. This feature is experimental and not well-developed and is not recommended for general gameplay.
+
+For more information, see the following pages:
+
+- [Radar Commands](commands.md#radar-commands)
+- [Radar Configs](config.md#radar-configs)
+
+## Other Pages
+
+- [Readme](index.md)
+- [Setup](setup.md)
+- [Keybindings](keybindings.md)
+- [Commands](commands.md)
+- [Configs](config.md)
+- [Guides](/guides/)

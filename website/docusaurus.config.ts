@@ -27,6 +27,12 @@ const config: Config = {
 
 	onBrokenLinks: "throw",
 
+	// Treat .md files as CommonMark (not MDX) so raw markdown from the
+	// original docs (e.g. `<index>` in changelogs) compiles unchanged.
+	markdown: {
+		format: "detect",
+	},
+
 	// Even if you don't use internationalization, you can use this field to set
 	// useful metadata like html lang. For example, if your site is Chinese, you
 	// may want to replace "en" with "zh-Hans".

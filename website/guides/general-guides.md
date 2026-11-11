@@ -1,12 +1,8 @@
-
-
 # General Guides
 
-This page provides general guides for playing Stardew Valley with Stardew Access enabled. The guides assume that you have already installed both Stardew Valley and Stardew Access as well as all required dependencies. Information on how to install both can be found in the [setup page](/docs/setup).
+This page provides general guides for playing Stardew Valley with Stardew Access enabled.  The guides assume that you have already installed both Stardew Valley and Stardew Access as well as all required dependencies. Information on how to install both can be found in the [setup page](/docs/setup).
 
 Information about the controls for Stardew Access and Stardew Valley can be found in [Keybindings](/docs/keybindings).
-
-
 
 ## Table of Contents
 
@@ -37,7 +33,6 @@ Information about the controls for Stardew Access and Stardew Valley can be foun
     - tile: a square-shaped portion of the grid where items may be placed
     - cursor: the pointer that sighted players use to select items and options
     - tile cursor: a feature of the tile viewer which allows Stardew Access Players to move the cursor around on the map
-
     - map interface: a screen which appears when purchasing farm animals or managing farm buildings
 
 ## Creating a New Game
@@ -99,7 +94,6 @@ The fishing game features many sounds which aren't heard anywhere else in the va
 - [Sine Wave](https://www.youtube.com/watch?v=yyvyt0HyvFk)
 - [Square Wave](https://www.youtube.com/watch?v=HHh-VdsVzmA)
 
-In order to fish, you first need a fishing rod. You can get your first fishing rod by visiting Willy at the beach after he sends you a letter in the mail, usually on day 2 of spring. Once you visit Willy, he will introduce himself and present you with the bamboo pole. You can fish in almost every body of water in the valley, including some elevator levels in [the mines](https://stardewvalleywiki.com/The_Mines). The [object tracker](stardew-access-guides.md#object-tracker) will present fishing spots in the fishing category when they are available. These are not necessary to use and you can fish in front of water where you like. These spots make it easy to get to water.
 In order to fish, you first need a fishing rod. You can get your first fishing rod by visiting Willy at the beach after he sends you a letter in the mail, usually on day 2 of spring. Once you visit Willy, he will introduce himself and present you with the bamboo pole. You can fish in almost every body of water in the valley, including some elevator levels in [the mines](https://stardewvalleywiki.com/The_Mines). The [object tracker](/docs/features#object-tracker) will present fishing spots in the fishing category when they are available. These are not necessary to use and you can fish in front of water where you like. These spots make it easy to get to water.
 
 Once you have your fishing rod, stand in front of and face the body of water you want to fish in. Hold your tool key to begin casting. You will hear a sine wave rising in pitch. The pitch of this sine wave represents your casting power: the higher the pitch, the further you will cast your line. Release your tool key when you reach the desired power level. You will hear the line splash into the water if your cast was successful, otherwise you must cast again. If you have trouble casting your line, make sure that you're positioned correctly in front of the water and try adjusting your casting power on your next cast. Finding the correct spot can be tricky when fishing in the ocean.
@@ -116,6 +110,6 @@ Currently, identifying treasure before catching is not accessible with Stardew A
 - [Farming Guides](farming-guides.md)
 - [Mining Guides](mining-guides.md)
 
-**[Back to guides home](index.md)**
+**[Back to guides home](index.md)
 
-**[Back to setup](/docs/setup)**
+**[Back to readme...](/docs/)**
