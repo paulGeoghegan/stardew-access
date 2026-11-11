@@ -5,7 +5,7 @@ import shutil
 import json
 import copy_changelogs_to
 
-CHANGELOG_DIR = 'https://github.com/stardew-access/stardew-access/blob/development/docs/changelogs/'
+CHANGELOG_DIR = 'https://github.com/stardew-access/stardew-access/blob/development/website/docs/changelogs/'
 LATEST_FILE_PATH = '../latest.md'
 DEFAULT_FILE_PATH = '../default.md'
 SEM_VER: str = r"v[0-9]+\.[0-9]+\.[0-9]+.*"
@@ -135,7 +135,7 @@ def write_list_to_file(file_path: str, lines: list, mode: str = 'w'):
 
 
 def get_version_from_manifest() -> str:
-    manifest_json_file = open('../../../stardew-access/manifest.json')
+    manifest_json_file = open('../../../../stardew-access/manifest.json')
     manifest_json = json.load(manifest_json_file)
     manifest_json_file.close()
     return f"v{manifest_json['Version']}"

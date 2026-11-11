@@ -27,7 +27,7 @@ To set up Stardew Access locally:
 
 2. **Install dependencies:**
    - Ensure you have [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) installed.
-   - You will need [Ruby](https://www.ruby-lang.org/en/downloads/) for compiling docs (see `docs/compiler_script.rb`).
+   - You will need [Ruby](https://www.ruby-lang.org/en/downloads/) for compiling docs (see `website/compiler_script.rb`).
    - Install the required Ruby gem for documentation:
      ```sh
      gem install kramdown
@@ -46,11 +46,11 @@ To set up Stardew Access locally:
 
 4. **Run or test the mod:**
    - Place the built files in your Stardew Valley `Mods` folder.
-   - Follow instructions in [docs/setup.md](docs/setup.md) for more details.
+   - Follow instructions in [website/docs/setup.md](website/docs/setup.md) for more details.
 
 5. **Compile documentation (optional):**
    ```sh
-   cd docs
+   cd website
    ruby compiler_script.rb
    ```
 

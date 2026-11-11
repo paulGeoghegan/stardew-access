@@ -167,26 +167,26 @@ jobs:
         if: inputs.generate-changelog
         run: |
           echo "Generating changelog from PR message..."
-          cd ./docs/changelogs
+          cd ./website/docs/changelogs
           
           # Extract changelog section from PR message
           echo "${{ needs.check-mergeable.outputs.pr-message }}" > pr_msg.txt
           sed -i '/## Changelog/,$!d' ./pr_msg.txt
           
           # Process changelog using Python script
-          python ./scripts/copy_changelogs_to.py ./pr_msg.txt ./latest.md > ../../response.txt
-          cat ../../response.txt
+          python ./scripts/copy_changelogs_to.py ./pr_msg.txt ./latest.md > ../../../response.txt
+          cat ../../../response.txt
           rm ./pr_msg.txt
           
-          cd ../../
+          cd ../../../
           
           # Check if changelog was actually generated
           if [[ "$( tail ./response.txt -n 1 )" = 'No changes to write!' ]] || [[ "$( tail ./response.txt -n 1 )" =~ "File \`(.*?)\` not found\!" ]]; then
             echo 'No changelogs found in PR message...'
           else
-            git add docs/changelogs/latest.md
+            git add website/docs/changelogs/latest.md
             git -c commit.gpgsign=false commit -m "docs: Added changelogs from #${{ inputs.pull-request-number }} to latest.md"
-            echo 'Successfully copied changelogs from PR body to docs/changelogs/latest.md'
+            echo 'Successfully copied changelogs from PR body to website/docs/changelogs/latest.md'
           fi
       
       - name: Check if Fast-Forward Merge is Possible

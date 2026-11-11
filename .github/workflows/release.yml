@@ -114,17 +114,17 @@ jobs:
 
       - name: Generate release notes and final changelog file
         run: |
-          cd docs/changelogs/scripts
+          cd website/docs/changelogs/scripts
           python gen_final_changelog_n_release_notes.py ${{ inputs.detailed-release-notes && '-d' || '' }} -v ${{ env.RELEASE_TAG }} -p ${{ env.PRE_RELEASE }}
-          mv ../temp_notes.md ../../../temp_notes.md
-          cd ../../../
+          mv ../temp_notes.md ../../../../temp_notes.md
+          cd ../../../../
 
       # git --no-pager log --oneline -10
       - name: Commit and push docs changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/changelogs/
+          git add website/docs/changelogs/
           git status
           git commit -m "docs: Generated final changelog file for ${{ env.RELEASE_TAG }}"
           git push origin
