@@ -9,8 +9,8 @@ Information about the controls for Stardew Access and Stardew Valley can be foun
 
 To get the most current documentation, check the following links:
 
-- [Stable Release Documentation](https://github.com/stardew-access/stardew-access/tree/master/docs)
-- [Beta Release Documentation](https://github.com/stardew-access/stardew-access/tree/development/docs#introduction)
+- [Latest documentation on this website](/docs/)
+- [Documentation source on GitHub (development branch)](https://github.com/stardew-access/stardew-access/tree/development/website/docs)
 
 ## Guide Pages
 

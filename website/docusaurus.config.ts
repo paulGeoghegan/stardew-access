@@ -59,7 +59,7 @@ const config: Config = {
 					routeBasePath: "docs",
 					sidebarPath: require.resolve("./sidebars.ts"),
 					editUrl:
-						"https://github.com/stardew-access/stardew-access/website/docs/",
+						"https://github.com/stardew-access/stardew-access/tree/development/website/",
 				},
 				theme: {
 					customCss: "./src/css/custom.css",
@@ -77,7 +77,7 @@ const config: Config = {
 				routeBasePath: "guides",
 				sidebarPath: require.resolve("./sidebarsGuides.ts"),
 				editUrl:
-					"https://github.com/stardew-access/stardew-access/website/guides/",
+					"https://github.com/stardew-access/stardew-access/tree/development/website/",
 			},
 		],
 		[
