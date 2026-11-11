@@ -5,7 +5,7 @@ Information about the controls for Stardew Access and Stardew Valley can be foun
 
 ## Guide Version
 
-**This guide file is up to date with Stardew Access [Release v1.6.2](https://github.com/stardew-access/stardew-access/releases/tag/v1.6.2).**
+**This guide file is up to date with Stardew Access [Release v1.7.0-beta.2](https://github.com/stardew-access/stardew-access/releases/tag/v1.7.0-beta.2).**
 
 To get the most current documentation, check the following links:
 
