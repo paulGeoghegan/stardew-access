@@ -158,3 +158,14 @@ jobs:
           file_category: main
           description: ${{ env.NEXUSMOD_DESC }}
           display_name: ${{ env.NEXUSMOD_NAME }}
+
+  # Redeploys the docs site so it includes the final changelog committed by
+  # the publish job (pushes made with GITHUB_TOKEN don't trigger docs.yml).
+  docs:
+    name: Deploy docs
+    needs: publish
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/docs.yml

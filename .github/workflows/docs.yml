@@ -35,6 +35,11 @@ jobs:
     steps:
       - name: Pull source code
         uses: actions/checkout@v4
+        with:
+          # Use the branch tip rather than the triggering SHA so that commits
+          # pushed by an earlier job of a calling workflow (e.g. the generated
+          # changelog in release.yml) are included.
+          ref: ${{ github.ref }}
 
       - name: Install Node.js
         uses: actions/setup-node@v4
